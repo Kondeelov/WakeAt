@@ -187,34 +187,34 @@ public class MainFragment extends Fragment implements OnMapReadyCallback,
         LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder().addLocationRequest(locationRequest);
         builder.setAlwaysShow(true);
 
-//        PendingResult<LocationSettingsResult> result = LocationServices.SettingsApi.checkLocationSettings(googleApiClient, builder.build());
-//        result.setResultCallback(new ResultCallback<LocationSettingsResult>() {
-//            public static final int REQUEST_CHECK_SETTINGS = 0x1;
-//
-//            @Override
-//            public void onResult(@NonNull LocationSettingsResult locationSettingsResult) {
-//                Status status = locationSettingsResult.getStatus();
-//                switch (status.getStatusCode()) {
-//                    case LocationSettingsStatusCodes.SUCCESS:
-////                        Log.i(TAG, "All location settings are satisfied.");
-//                        break;
-//                    case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
-////                        Log.i(TAG, "Location settings are not satisfied. Show the user a dialog to upgrade location settings ");
-//
-//                        try {
-//                            // Show the dialog by calling startResolutionForResult(), and check the result
-//                            // in onActivityResult().
-//                            status.startResolutionForResult(getActivity(), REQUEST_CHECK_SETTINGS);
-//                        } catch (IntentSender.SendIntentException e) {
-////                            Log.i(TAG, "PendingIntent unable to execute request.");
-//                        }
-//                        break;
-//                    case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
-////                        Log.i(TAG, "Location settings are inadequate, and cannot be fixed here. Dialog not created.");
-//                        break;
-//                }
-//            }
-//        });
+        PendingResult<LocationSettingsResult> result = LocationServices.SettingsApi.checkLocationSettings(googleApiClient, builder.build());
+        result.setResultCallback(new ResultCallback<LocationSettingsResult>() {
+            public static final int REQUEST_CHECK_SETTINGS = 0x1;
+
+            @Override
+            public void onResult(@NonNull LocationSettingsResult locationSettingsResult) {
+                Status status = locationSettingsResult.getStatus();
+                switch (status.getStatusCode()) {
+                    case LocationSettingsStatusCodes.SUCCESS:
+                        Log.i(TAG, "All location settings are satisfied.");
+                        break;
+                    case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
+                        Log.i(TAG, "Location settings are not satisfied. Show the user a dialog to upgrade location settings ");
+
+                        try {
+                            // Show the dialog by calling startResolutionForResult(), and check the result
+                            // in onActivityResult().
+                            status.startResolutionForResult(getActivity(), REQUEST_CHECK_SETTINGS);
+                        } catch (IntentSender.SendIntentException e) {
+                            Log.i(TAG, "PendingIntent unable to execute request.");
+                        }
+                        break;
+                    case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
+                        Log.i(TAG, "Location settings are inadequate, and cannot be fixed here. Dialog not created.");
+                        break;
+                }
+            }
+        });
     }
 
     @Override
