@@ -26,13 +26,17 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.LatLng;
 import com.kondee.wakeat.databinding.FragmentMainBinding;
 
 /**
  * Created by Kondee on 5/3/2017.
  */
+
+//      TODO : Add status to check should animate camera in onLocationChanged.
 
 public class MainFragment extends Fragment implements OnMapReadyCallback,
         LocationListener,
@@ -120,8 +124,7 @@ public class MainFragment extends Fragment implements OnMapReadyCallback,
     @Override
     public void onMapReady(final GoogleMap googleMap) {
         this.googleMap = googleMap;
-        Log.d(TAG, "onMapReady: ");
-//        googleMap.moveCamera();
+
 //        googleMap.getUiSettings().setMapToolbarEnabled(false);
 
         setMyLocationEnable();
@@ -130,6 +133,7 @@ public class MainFragment extends Fragment implements OnMapReadyCallback,
             @Override
             public boolean onMyLocationButtonClick() {
 
+                setLocationRequest();
 
                 return true;
             }
@@ -138,13 +142,7 @@ public class MainFragment extends Fragment implements OnMapReadyCallback,
 
     private void setMyLocationEnable() {
         if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
+
             if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION) ||
                     shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION)) {
                 requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_CODE);
@@ -159,12 +157,39 @@ public class MainFragment extends Fragment implements OnMapReadyCallback,
         googleMap.setMyLocationEnabled(true);
     }
 
+    private void setLocationRequest() {
+        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+            if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION) ||
+                    shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION)) {
+                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_CODE);
+                return;
+            }
+
+            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_CODE);
+
+            return;
+        }
+
+        showLocationEnableRequest();
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == REQUEST_CODE) {
-            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                setMyLocationEnable();
+
+            for (int i = 0; i < permissions.length; i++) {
+                String permission = permissions[i];
+                int grantResult = grantResults[i];
+
+                if (permission.equals(Manifest.permission.ACCESS_FINE_LOCATION)) {
+                    if (grantResult == PackageManager.PERMISSION_GRANTED) {
+                        setMyLocationEnable();
+                    } else {
+                        requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
+                    }
+                }
             }
         }
     }
@@ -177,13 +202,34 @@ public class MainFragment extends Fragment implements OnMapReadyCallback,
         locationRequest.setInterval(4000);
         locationRequest.setFastestInterval(1500);
 
-//        Location location = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
-//        if (location == null) {
-//            LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this);
-//        } else {
-//
-//        }
+        setLocationRequest();
 
+    }
+
+    public void updateCameraPosition() {
+        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+            if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION) ||
+                    shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION)) {
+                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_CODE);
+                return;
+            }
+
+            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_CODE);
+
+            return;
+        }
+
+        Location location = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
+        if (location == null) {
+            LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this);
+        } else {
+            Log.d(TAG, "updateCameraPosition: Latitude "+location.getLatitude()+", Longitude "+location.getLongitude());
+            googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 15));
+        }
+    }
+
+    private void showLocationEnableRequest() {
         LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder().addLocationRequest(locationRequest);
         builder.setAlwaysShow(true);
 
@@ -196,6 +242,7 @@ public class MainFragment extends Fragment implements OnMapReadyCallback,
                 Status status = locationSettingsResult.getStatus();
                 switch (status.getStatusCode()) {
                     case LocationSettingsStatusCodes.SUCCESS:
+                        updateCameraPosition();
                         Log.i(TAG, "All location settings are satisfied.");
                         break;
                     case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
@@ -229,6 +276,6 @@ public class MainFragment extends Fragment implements OnMapReadyCallback,
 
     @Override
     public void onLocationChanged(Location location) {
-
+        Log.d(TAG, "onLocationChanged: ");
     }
 }
