@@ -1,6 +1,7 @@
 package com.kondee.wakeat;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.databinding.DataBindingUtil;
@@ -10,12 +11,18 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
@@ -26,17 +33,18 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.ui.PlacePicker;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.kondee.wakeat.databinding.FragmentMainBinding;
 
 /**
  * Created by Kondee on 5/3/2017.
  */
-
-//      TODO : Add status to check should animate camera in onLocationChanged.
 
 public class MainFragment extends Fragment implements OnMapReadyCallback,
         LocationListener,
@@ -45,10 +53,16 @@ public class MainFragment extends Fragment implements OnMapReadyCallback,
 
     private static final String TAG = "Kondee";
     private static final int REQUEST_CODE = 1234;
+    private static final int PLACE_PICKER_REQUEST = 4;
+    private final int ZOOM_DEFAULT_VALUE = 15;
     FragmentMainBinding binding;
     private GoogleMap googleMap;
     private GoogleApiClient googleApiClient;
     private LocationRequest locationRequest;
+    boolean shouldMoveCamera = false;
+    private PlacePicker.IntentBuilder builder;
+    private Menu menu;
+    private MarkerOptions marker;
 
     public static MainFragment newInstance() {
         MainFragment fragment = new MainFragment();
@@ -68,7 +82,7 @@ public class MainFragment extends Fragment implements OnMapReadyCallback,
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_main, container, false);
 
-        initInstance(savedInstanceState);
+        initInstance(savedInstanceState, binding.getRoot());
 
         return binding.getRoot();
     }
@@ -107,7 +121,7 @@ public class MainFragment extends Fragment implements OnMapReadyCallback,
         binding.map.onLowMemory();
     }
 
-    private void initInstance(Bundle savedInstanceState) {
+    private void initInstance(Bundle savedInstanceState, View root) {
 
         binding.map.onCreate(savedInstanceState);
 
@@ -119,6 +133,46 @@ public class MainFragment extends Fragment implements OnMapReadyCallback,
                 .addApi(LocationServices.API)
                 .build();
 
+        builder = new PlacePicker.IntentBuilder();
+
+        MainActivity mainActivity = (MainActivity) getActivity();
+
+        mainActivity.setOnOptionMenuCreatedListener(new MainActivity.onOptionMenuCreated() {
+
+            @Override
+            public void onMenuCreated(Menu menu) {
+                MainFragment.this.menu = menu;
+
+                setLocationIcon();
+            }
+        });
+
+        mainActivity.setOnOptionItemSelectedListener(new MainActivity.onOptionItemSelected() {
+            @Override
+            public void onMenuSelected() {
+
+                startPlacePicker();
+            }
+        });
+    }
+
+    private void setLocationIcon() {
+        if (menu != null) {
+            MenuItem location = menu.findItem(R.id.location);
+            if (marker == null) {
+                location.setIcon(R.drawable.location_off);
+            } else {
+                location.setIcon(R.drawable.location_on);
+            }
+        }
+    }
+
+    private void startPlacePicker() {
+        try {
+            startActivityForResult(builder.build(getActivity()), PLACE_PICKER_REQUEST);
+        } catch (GooglePlayServicesRepairableException | GooglePlayServicesNotAvailableException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -132,6 +186,7 @@ public class MainFragment extends Fragment implements OnMapReadyCallback,
         googleMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener() {
             @Override
             public boolean onMyLocationButtonClick() {
+                shouldMoveCamera = true;
 
                 setLocationRequest();
 
@@ -195,6 +250,27 @@ public class MainFragment extends Fragment implements OnMapReadyCallback,
     }
 
     @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == PLACE_PICKER_REQUEST) {
+
+            googleMap.clear();
+
+            Place place = PlacePicker.getPlace(getActivity(), data);
+
+            MarkerOptions markerOptions = new MarkerOptions();
+            markerOptions.position(place.getLatLng());
+            googleMap.addMarker(markerOptions);
+
+            this.marker = markerOptions;
+
+            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(place.getLatLng(), ZOOM_DEFAULT_VALUE));
+
+            setLocationIcon();
+        }
+    }
+
+    @Override
     public void onConnected(@Nullable Bundle bundle) {
 
         locationRequest = LocationRequest.create();
@@ -224,8 +300,10 @@ public class MainFragment extends Fragment implements OnMapReadyCallback,
         if (location == null) {
             LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this);
         } else {
-            Log.d(TAG, "updateCameraPosition: Latitude "+location.getLatitude()+", Longitude "+location.getLongitude());
-            googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 15));
+            Log.d(TAG, "updateCameraPosition: Latitude " + location.getLatitude() + ", Longitude " + location.getLongitude());
+            googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), ZOOM_DEFAULT_VALUE));
+
+            shouldMoveCamera = false;
         }
     }
 
@@ -276,6 +354,10 @@ public class MainFragment extends Fragment implements OnMapReadyCallback,
 
     @Override
     public void onLocationChanged(Location location) {
+        if (shouldMoveCamera) {
+            updateCameraPosition();
+        }
         Log.d(TAG, "onLocationChanged: ");
     }
+
 }
