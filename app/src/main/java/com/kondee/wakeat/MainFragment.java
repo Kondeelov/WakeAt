@@ -1,12 +1,14 @@
 package com.kondee.wakeat;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.databinding.DataBindingUtil;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -39,7 +41,9 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.maps.android.SphericalUtil;
 import com.kondee.wakeat.databinding.FragmentMainBinding;
 
 /**
@@ -63,6 +67,10 @@ public class MainFragment extends Fragment implements OnMapReadyCallback,
     private PlacePicker.IntentBuilder builder;
     private Menu menu;
     private MarkerOptions marker;
+    private LatLngBounds latLngBounds;
+    private Vibrator vibrator;
+
+    long[] vibratePattern = {0, 100, 1000, 300, 200, 100, 500, 200, 100};
 
     public static MainFragment newInstance() {
         MainFragment fragment = new MainFragment();
@@ -134,6 +142,8 @@ public class MainFragment extends Fragment implements OnMapReadyCallback,
                 .build();
 
         builder = new PlacePicker.IntentBuilder();
+
+        vibrator = (Vibrator) getActivity().getSystemService(Context.VIBRATOR_SERVICE);
 
         MainActivity mainActivity = (MainActivity) getActivity();
 
@@ -253,20 +263,27 @@ public class MainFragment extends Fragment implements OnMapReadyCallback,
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == PLACE_PICKER_REQUEST) {
+            if (data != null) {
 
-            googleMap.clear();
+                googleMap.clear();
 
-            Place place = PlacePicker.getPlace(getActivity(), data);
+                Place place = PlacePicker.getPlace(getActivity(), data);
 
-            MarkerOptions markerOptions = new MarkerOptions();
-            markerOptions.position(place.getLatLng());
-            googleMap.addMarker(markerOptions);
+//                Log.d(TAG, "onActivityResult: " + place.getLatLng());
 
-            this.marker = markerOptions;
+                MarkerOptions markerOptions = new MarkerOptions();
+                markerOptions.position(place.getLatLng());
+                googleMap.addMarker(markerOptions);
 
-            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(place.getLatLng(), ZOOM_DEFAULT_VALUE));
+                this.marker = markerOptions;
 
-            setLocationIcon();
+                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(place.getLatLng(), ZOOM_DEFAULT_VALUE));
+
+                setLocationIcon();
+
+                latLngBounds = toBounds(place.getLatLng(), 250);
+
+            }
         }
     }
 
@@ -354,10 +371,25 @@ public class MainFragment extends Fragment implements OnMapReadyCallback,
 
     @Override
     public void onLocationChanged(Location location) {
+        Log.d(TAG, "onLocationChanged: ");
         if (shouldMoveCamera) {
             updateCameraPosition();
         }
-        Log.d(TAG, "onLocationChanged: ");
+        checkTargetArea(location);
     }
 
+    private void checkTargetArea(Location location) {
+        if (latLngBounds != null) {
+            if (latLngBounds.contains(new LatLng(location.getLatitude(), location.getLongitude()))) {
+                Log.d(TAG, "checkTargetArea: Success");
+                vibrator.vibrate(vibratePattern, -1);
+            }
+        }
+    }
+
+    public LatLngBounds toBounds(LatLng center, double radius) {
+        LatLng southwest = SphericalUtil.computeOffset(center, radius * Math.sqrt(2.0), 225);
+        LatLng northeast = SphericalUtil.computeOffset(center, radius * Math.sqrt(2.0), 45);
+        return new LatLngBounds(southwest, northeast);
+    }
 }
