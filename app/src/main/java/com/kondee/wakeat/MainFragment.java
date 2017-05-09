@@ -189,8 +189,6 @@ public class MainFragment extends Fragment implements OnMapReadyCallback,
     public void onMapReady(final GoogleMap googleMap) {
         this.googleMap = googleMap;
 
-//        googleMap.getUiSettings().setMapToolbarEnabled(false);
-
         setMyLocationEnable();
 
         googleMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener() {
@@ -295,7 +293,7 @@ public class MainFragment extends Fragment implements OnMapReadyCallback,
         locationRequest.setInterval(4000);
         locationRequest.setFastestInterval(1500);
 
-        setLocationRequest();
+//        setLocationRequest();
 
     }
 
@@ -313,7 +311,11 @@ public class MainFragment extends Fragment implements OnMapReadyCallback,
             return;
         }
 
+//        TODO : Get location by another method.
+
         Location location = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
+        Log.d(TAG, "getLocationAvailability: " + LocationServices.FusedLocationApi.getLocationAvailability(googleApiClient));
+
         if (location == null) {
             LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this);
         } else {
