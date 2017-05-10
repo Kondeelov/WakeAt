@@ -45,6 +45,7 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.maps.android.SphericalUtil;
 import com.kondee.wakeat.databinding.FragmentMainBinding;
+import com.kondee.wakeat.service.ServiceConstant;
 
 /**
  * Created by Kondee on 5/3/2017.
@@ -71,6 +72,8 @@ public class MainFragment extends Fragment implements OnMapReadyCallback,
     private Vibrator vibrator;
 
     long[] vibratePattern = {0, 100, 1000, 300, 200, 100, 500, 200, 100};
+    private boolean isServiceStarted;
+    private boolean isFirstTime;
 
     public static MainFragment newInstance() {
         MainFragment fragment = new MainFragment();
@@ -83,6 +86,8 @@ public class MainFragment extends Fragment implements OnMapReadyCallback,
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        isFirstTime = true;
     }
 
     @Nullable
@@ -162,6 +167,20 @@ public class MainFragment extends Fragment implements OnMapReadyCallback,
             public void onMenuSelected() {
 
                 startPlacePicker();
+            }
+        });
+
+        binding.testService.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getActivity(), ForegroundLocationService.class);
+                if (!isServiceStarted) {
+                    intent.setAction(ServiceConstant.STARTFOREGROUND_ACTION);
+                } else {
+                    intent.setAction(ServiceConstant.STOPFOREGROUND_ACTION);
+                }
+                getActivity().startService(intent);
+                isServiceStarted = !isServiceStarted;
             }
         });
     }
@@ -314,14 +333,19 @@ public class MainFragment extends Fragment implements OnMapReadyCallback,
 //        TODO : Get location by another method.
 
         Location location = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
-        Log.d(TAG, "getLocationAvailability: " + LocationServices.FusedLocationApi.getLocationAvailability(googleApiClient));
 
         if (location == null) {
             LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this);
-        } else {
-            Log.d(TAG, "updateCameraPosition: Latitude " + location.getLatitude() + ", Longitude " + location.getLongitude());
-            googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), ZOOM_DEFAULT_VALUE));
 
+            isFirstTime = false;
+        } else {
+            if (isFirstTime) {
+                LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this);
+
+                isFirstTime = false;
+            } else {
+                googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), ZOOM_DEFAULT_VALUE));
+            }
             shouldMoveCamera = false;
         }
     }

@@ -9,6 +9,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.kondee.wakeat.databinding.ActivityMainBinding;
+import com.kondee.wakeat.service.ServiceConstant;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -21,6 +22,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
+
+//        Intent intent = new Intent(MainActivity.this, ForegroundLocationService.class);
+//        intent.setAction(ServiceConstant.STOPFOREGROUND_ACTION);
+//        startService(intent);
 
         initInstance();
     }
@@ -63,6 +68,14 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+//        Intent intent = new Intent(MainActivity.this, ForegroundLocationService.class);
+//        intent.setAction(ServiceConstant.STARTFOREGROUND_ACTION);
+//        startService(intent);
     }
 
     public interface onOptionMenuCreated {
