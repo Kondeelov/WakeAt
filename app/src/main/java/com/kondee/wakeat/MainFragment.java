@@ -179,6 +179,9 @@ public class MainFragment extends Fragment implements OnMapReadyCallback,
                 } else {
                     intent.setAction(ServiceConstant.STOPFOREGROUND_ACTION);
                 }
+
+//                TODO : Put a target LanLngBound to foreground service to check if in area.
+//                intent.putExtra();
                 getActivity().startService(intent);
                 isServiceStarted = !isServiceStarted;
             }
