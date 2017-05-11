@@ -2,6 +2,7 @@ package com.kondee.wakeat;
 
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
+import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -10,6 +11,8 @@ import android.view.MenuItem;
 
 import com.kondee.wakeat.databinding.ActivityMainBinding;
 import com.kondee.wakeat.service.ServiceConstant;
+
+import org.parceler.Parcels;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -23,10 +26,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
 
-//        Intent intent = new Intent(MainActivity.this, ForegroundLocationService.class);
-//        intent.setAction(ServiceConstant.STOPFOREGROUND_ACTION);
-//        startService(intent);
-
         initInstance();
     }
 
@@ -34,9 +33,15 @@ public class MainActivity extends AppCompatActivity {
 
         setSupportActionBar(binding.toolBar);
 
+        Parcelable parcelable = getIntent().getParcelableExtra("parcelable");
+
         getSupportFragmentManager().beginTransaction()
-                .replace(binding.contentContainer.getId(), MainFragment.newInstance(), "MainFragment")
+                .replace(binding.contentContainer.getId(), MainFragment.newInstance(parcelable), "MainFragment")
                 .commit();
+
+        Intent intent = new Intent(this, ForegroundLocationService.class);
+        intent.setAction(ServiceConstant.STOPFOREGROUND_ACTION);
+        startService(intent);
     }
 
     @Override

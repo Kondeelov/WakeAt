@@ -15,6 +15,8 @@ import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.Parcelable;
+import android.os.Vibrator;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -29,6 +31,8 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
 import com.kondee.wakeat.service.ServiceConstant;
 
+import org.parceler.Parcels;
+
 import java.util.Objects;
 
 public class ForegroundLocationService extends Service implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
@@ -38,6 +42,9 @@ public class ForegroundLocationService extends Service implements GoogleApiClien
     private NotificationManager notificationManager;
     private Location location = new Location("DummyProvider");
     private LocationRequest locationRequest;
+    private LocationModel locationModel;
+    private Vibrator vibrator;
+    long[] vibratePattern = {0, 1000, 100, 300, 100, 300};
 
     @Override
     public void onCreate() {
@@ -54,12 +61,16 @@ public class ForegroundLocationService extends Service implements GoogleApiClien
         googleApiClient.connect();
         createLocationRequest();
 
+        vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+
         notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (Objects.equals(intent.getAction(), ServiceConstant.STARTFOREGROUND_ACTION)) {
+            Parcelable parcelable = intent.getParcelableExtra("parcelable");
+            locationModel = Parcels.unwrap(parcelable);
 
             Notification notification = getNotification();
 
@@ -80,6 +91,10 @@ public class ForegroundLocationService extends Service implements GoogleApiClien
         notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                 | Intent.FLAG_ACTIVITY_CLEAR_TASK);
 
+        LocationModel model = new LocationModel();
+        model.setLatLngBounds(locationModel.getLatLngBounds());
+        notificationIntent.putExtra("parcelable", Parcels.wrap(model));
+
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
 
         return new NotificationCompat.Builder(this)
@@ -98,6 +113,8 @@ public class ForegroundLocationService extends Service implements GoogleApiClien
         super.onDestroy();
 
         googleApiClient.disconnect();
+
+        vibrator.cancel();
     }
 
     @Nullable
@@ -128,9 +145,16 @@ public class ForegroundLocationService extends Service implements GoogleApiClien
 
     @Override
     public void onLocationChanged(Location location) {
-        Log.d(TAG, "onLocationChanged: ");
         this.location = location;
         notificationManager.notify(ServiceConstant.NOTIFICATION_ID.FOREGROUND_SERVICE, getNotification());
+        checkTargetArea();
+    }
+
+    private void checkTargetArea() {
+        if (locationModel.getLatLngBounds().contains(new LatLng(location.getLatitude(), location.getLongitude()))) {
+            Log.d(TAG, "checkTargetArea: Success");
+            vibrator.vibrate(vibratePattern,-1);
+        }
     }
 
     public void requestLocationUpdates() {
