@@ -1,26 +1,17 @@
 package com.kondee.wakeat;
 
-import android.Manifest;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
-import android.location.GnssMeasurementsEvent;
-import android.location.GnssNavigationMessage;
-import android.location.GnssStatus;
-import android.location.GpsStatus;
 import android.location.Location;
-import android.location.LocationManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Parcelable;
 import android.os.Vibrator;
-import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -45,6 +36,7 @@ public class ForegroundLocationService extends Service implements GoogleApiClien
     private LocationModel locationModel;
     private Vibrator vibrator;
     long[] vibratePattern = {0, 1000, 100, 300, 100, 300};
+    private Parcelable parcelable;
 
     @Override
     public void onCreate() {
@@ -69,8 +61,10 @@ public class ForegroundLocationService extends Service implements GoogleApiClien
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (Objects.equals(intent.getAction(), ServiceConstant.STARTFOREGROUND_ACTION)) {
-            Parcelable parcelable = intent.getParcelableExtra("parcelable");
+            parcelable = intent.getParcelableExtra("parcelable");
             locationModel = Parcels.unwrap(parcelable);
+
+            Log.d(TAG, "onStartCommand: " + locationModel.getLatLngBounds().getCenter());
 
             Notification notification = getNotification();
 
@@ -80,6 +74,7 @@ public class ForegroundLocationService extends Service implements GoogleApiClien
             stopForeground(true);
             stopSelf();
         }
+
         return START_STICKY;
     }
 
@@ -91,16 +86,14 @@ public class ForegroundLocationService extends Service implements GoogleApiClien
         notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                 | Intent.FLAG_ACTIVITY_CLEAR_TASK);
 
-        LocationModel model = new LocationModel();
-        model.setLatLngBounds(locationModel.getLatLngBounds());
-        notificationIntent.putExtra("parcelable", Parcels.wrap(model));
+        notificationIntent.putExtra("parcelable", parcelable);
 
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
 
-        return new NotificationCompat.Builder(this)
+        return new Notification.Builder(this)
                 .setContentTitle("Start Location Service!")
                 .setTicker("Ticker")
-                .setContentText("Wake At... Your location is " + location.getLatitude() + " " + location.getLongitude())
+                .setContentText("Wake At... Your location is " + locationModel.getLatLngBounds().getCenter().latitude + " " + locationModel.getLatLngBounds().getCenter().longitude)
                 .setSmallIcon(R.drawable.location_on)
                 .setContentIntent(pendingIntent)
                 .setOngoing(true)
@@ -153,7 +146,7 @@ public class ForegroundLocationService extends Service implements GoogleApiClien
     private void checkTargetArea() {
         if (locationModel.getLatLngBounds().contains(new LatLng(location.getLatitude(), location.getLongitude()))) {
             Log.d(TAG, "checkTargetArea: Success");
-            vibrator.vibrate(vibratePattern,-1);
+            vibrator.vibrate(vibratePattern, -1);
         }
     }
 
@@ -162,7 +155,6 @@ public class ForegroundLocationService extends Service implements GoogleApiClien
         try {
             LocationServices.FusedLocationApi.requestLocationUpdates(
                     googleApiClient, locationRequest, ForegroundLocationService.this);
-            Log.d(TAG, "requestLocationUpdates: ");
         } catch (SecurityException unlikely) {
             Log.e(TAG, "Lost location permission. Could not request updates. " + unlikely);
         }

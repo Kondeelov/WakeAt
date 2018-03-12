@@ -7,7 +7,6 @@ import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.databinding.DataBindingUtil;
 import android.location.Location;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.os.Vibrator;
@@ -15,11 +14,9 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -45,7 +42,6 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.maps.android.SphericalUtil;
 import com.kondee.wakeat.databinding.FragmentMainBinding;
 import com.kondee.wakeat.service.ServiceConstant;
 import com.kondee.wakeat.utils.Utils;
@@ -107,7 +103,7 @@ public class MainFragment extends Fragment implements OnMapReadyCallback,
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_main, container, false);
 
         initInstance(savedInstanceState);
@@ -197,25 +193,6 @@ public class MainFragment extends Fragment implements OnMapReadyCallback,
             }
         });
 
-        binding.testService.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-//                Intent intent = new Intent(getActivity(), ForegroundLocationService.class);
-//                if (!isServiceStarted) {
-//                    intent.setAction(ServiceConstant.STARTFOREGROUND_ACTION);
-//                } else {
-//                    intent.setAction(ServiceConstant.STOPFOREGROUND_ACTION);
-//                }
-//
-//                TODO : Put a target LanLngBound to foreground service to check if in area.
-//                LocationModel locationModel = new LocationModel();
-//                locationModel.setLatLngBounds(latLngBounds);
-//
-//                intent.putExtra("parcelable", Parcels.wrap(locationModel));
-//                getActivity().startService(intent);
-                isServiceStarted = !isServiceStarted;
-            }
-        });
     }
 
     private void setLocationIcon() {
@@ -243,7 +220,6 @@ public class MainFragment extends Fragment implements OnMapReadyCallback,
 
         if (latLngBounds != null) {
             LatLng center = latLngBounds.getCenter();
-            Log.d(TAG, "onCreate: " + center);
             MarkerOptions markerOptions = new MarkerOptions();
             markerOptions.position(center);
 
@@ -327,8 +303,6 @@ public class MainFragment extends Fragment implements OnMapReadyCallback,
                 googleMap.clear();
 
                 Place place = PlacePicker.getPlace(getActivity(), data);
-
-//                Log.d(TAG, "onActivityResult: " + place.getLatLng());
 
                 MarkerOptions markerOptions = new MarkerOptions();
                 markerOptions.position(place.getLatLng());
@@ -443,7 +417,6 @@ public class MainFragment extends Fragment implements OnMapReadyCallback,
 
     @Override
     public void onLocationChanged(Location location) {
-        Log.d(TAG, "onLocationChanged: ");
         if (shouldMoveCamera) {
             updateCameraPosition();
         }

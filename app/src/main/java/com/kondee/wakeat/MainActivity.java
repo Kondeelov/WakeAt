@@ -2,21 +2,17 @@ package com.kondee.wakeat;
 
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
+import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import com.kondee.wakeat.databinding.ActivityMainBinding;
 import com.kondee.wakeat.service.ServiceConstant;
 
-import org.parceler.Parcels;
-
 public class MainActivity extends AppCompatActivity {
 
-    private static final String TAG = "Kondee";
     ActivityMainBinding binding;
     private onOptionMenuCreated menuCreatedListener;
     private onOptionItemSelected itemSelectedListener;
@@ -78,9 +74,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-//        Intent intent = new Intent(MainActivity.this, ForegroundLocationService.class);
-//        intent.setAction(ServiceConstant.STARTFOREGROUND_ACTION);
-//        startService(intent);
+
     }
 
     public interface onOptionMenuCreated {
