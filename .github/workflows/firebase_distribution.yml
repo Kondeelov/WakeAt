@@ -2,10 +2,14 @@ name: Upload Apk to Firebase Distribution
 
 on:
   push:
-    branches: [ "master" ]
+    branches: 
+      -master
+      -develop
   pull_request:
-    branches: [ "master" ]
-
+    branches:
+      -master
+      -develop
+      
 jobs:
   build:
 
@@ -23,7 +27,7 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
     - name: Build with Gradle
-      run: ./gradlew assembleDebug
+      run: ./gradlew app:assembleDebug
  
     - name: Upload to Firebase App Distribution
       uses: wzieba/Firebase-Distribution-Github-Action@v1.2.1
