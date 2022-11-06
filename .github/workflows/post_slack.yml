@@ -29,7 +29,7 @@ jobs:
       run: | 
         export var="$(cat release_note.md)"
         echo $var
-        echo "release_note=\'$var\'" >> $GITHUB_OUTPUT
+        echo -e "release_note=\'$var\'" >> $GITHUB_OUTPUT
       
     - name: Test output
       run: echo ${{ steps.release_note.outputs.release_note }}
