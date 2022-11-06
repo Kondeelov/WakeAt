@@ -24,6 +24,12 @@ jobs:
     - name: Test output
       run: echo "$(cat release_note.md)"
     
+    - name: Print a release_note
+      env:
+        MY_VAR: echo "$(cat release_note.md)"
+      run: |
+        echo $MY_VAR
+    
     - name: Get release note from file
       id: release_note
       run: | 
