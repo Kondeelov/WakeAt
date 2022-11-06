@@ -26,7 +26,10 @@ jobs:
     
     - name: Get release note from file
       id: release_note
-      run: echo -e "release_note=$(cat release_note.md)" >> $GITHUB_OUTPUT
+      run: | 
+        releasenote=cat release_note.md
+        echo $releasenote
+        echo -e "release_note=$releasenote" >> $GITHUB_OUTPUT
       
     - name: Test output
       run: echo ${{ steps.release_note.outputs.release_note }}
