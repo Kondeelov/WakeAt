@@ -27,11 +27,10 @@ jobs:
     - name: Get release note from file
       id: release_note
       run: | 
-        IFS= read -r -d '' content <release_note.md
+        IFS= read -r -d content <release_note.md
         content=${content//'"'/'\"'/}
         content=${content//$'\n'/'\n'}=
-        export var="$content"
-        echo $var
+        echo $content
         echo -e "release_note=\'$var\'" >> $GITHUB_OUTPUT
       
     - name: Test output
