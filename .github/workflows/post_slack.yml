@@ -28,11 +28,10 @@ jobs:
       id: release_note
       run: | 
         export content="$(cat release_note.md)"
-        echo "1 $content"
-        content=${content//'"'/'\"'/}
-        content=${content//$'\n'/'\n'}
-        echo "2 $content"
         echo "release_note=$content" >> $GITHUB_OUTPUT
+#        content=${content//'"'/'\"'/}
+#        content=${content//$'\n'/'\n'}
+      if: ${{ failure() ||  success() }}
       
     - name: Test output
       run: echo ${{ steps.release_note.outputs.release_note }}
