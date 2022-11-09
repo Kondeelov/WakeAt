@@ -26,12 +26,12 @@ jobs:
     
     - name: Get release note from file
       id: release_note
+      if: always()
       run: | 
         export content="$(cat release_note.md)"
         echo "release_note=$content" >> $GITHUB_OUTPUT
 #        content=${content//'"'/'\"'/}
 #        content=${content//$'\n'/'\n'}
-      if: ${{ failure() ||  success() }}
       
     - name: Test output
       run: echo ${{ steps.release_note.outputs.release_note }}
