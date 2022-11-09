@@ -57,7 +57,6 @@ jobs:
                   "text": "${{ steps.release_note.outputs.release_note }}"
                 }
               },
-              ,
               {
                 "type": "section",
                 "fields": [
