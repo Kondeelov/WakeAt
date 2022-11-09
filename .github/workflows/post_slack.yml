@@ -32,7 +32,7 @@ jobs:
         content=${content//'"'/'\"'/}
         content=${content//$'\n'/'\n'}
         echo "2 $content"
-        echo "release_note=\'$var\'" >> $GITHUB_OUTPUT
+        echo "release_note=\'$content\'" >> $GITHUB_OUTPUT
       
     - name: Test output
       run: echo ${{ steps.release_note.outputs.release_note }}
