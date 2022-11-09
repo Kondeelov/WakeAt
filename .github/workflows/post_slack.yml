@@ -28,9 +28,10 @@ jobs:
       id: release_note
       run: | 
         export content="$(cat release_note.md)"
+        echo "1 $content"
         content=${content//'"'/'\"'/}
         content=${content//$'\n'/'\n'}=
-        echo $content
+        echo "2 $content"
         echo -e "release_note=\'$var\'" >> $GITHUB_OUTPUT
       
     - name: Test output
