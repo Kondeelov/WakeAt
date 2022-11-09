@@ -30,9 +30,9 @@ jobs:
         export content="$(cat release_note.md)"
         echo "1 $content"
         content=${content//'"'/'\"'/}
-        content=${content//$'\n'/'\n'}=
+        content=${content//$'\n'/'\n'}
         echo "2 $content"
-        echo -e "release_note=\'$var\'" >> $GITHUB_OUTPUT
+        echo "release_note=\'$var\'" >> $GITHUB_OUTPUT
       
     - name: Test output
       run: echo ${{ steps.release_note.outputs.release_note }}
