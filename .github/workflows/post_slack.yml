@@ -27,7 +27,7 @@ jobs:
     - name: Get release note from file
       id: release_note
       run: | 
-        IFS= read -r -d content <release_note.md
+        IFS= read -r -d '' content <release_note.md
         content=${content//'"'/'\"'/}
         content=${content//$'\n'/'\n'}=
         echo $content
