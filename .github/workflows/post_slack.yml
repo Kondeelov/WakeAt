@@ -3,11 +3,11 @@ name: Notify status to slack channel
 on:
   push:
     branches: 
-#     - master
+    - master
     - develop
   pull_request:
     branches: 
-#     - master
+    - master
     - develop
 
 jobs:
