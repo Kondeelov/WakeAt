@@ -34,6 +34,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: List file
+      run: ls
     - name: Upload to Firebase App Distribution
       uses: wzieba/Firebase-Distribution-Github-Action@v1.4.0
       with:
