@@ -16,8 +16,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-#     - name: Grant execute permission for gradlew
-#       run: chmod +x gradlew
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
 
     - uses: actions/checkout@v3
     
@@ -32,8 +32,10 @@ jobs:
         content=${content//$'\n'/'\n'}
         echo "release_note=$content" >> $GITHUB_OUTPUT
       
-    - name: Test output
-      run: echo ${{ steps.release_note.outputs.release_note }}
+    - name: Get version
+      id: version
+      run: |
+        echo "version=$(./gradlew printVersionName)" >> GITHUB_OUTPUT
 
     - name: Post build status to a Slack channel
       id: slack
@@ -62,7 +64,11 @@ jobs:
                 "fields": [
                   {
                     "type": "mrkdwn",
-                    "text": "*Feature*\n ${{ github.ref_name }}"
+                    "text": "*Branch*\n ${{ github.ref_name }}"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Version*\n ${{ github.ref_name }}"
                   }
                 ]
               }
