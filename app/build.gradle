@@ -46,3 +46,7 @@ dependencies {
     implementation platform('com.google.firebase:firebase-bom:31.0.1')
     implementation 'com.google.firebase:firebase-analytics-ktx'
 }
+
+task printVersionName {
+    println project.android.defaultConfig.versionName + "(" + project.android.defaultConfig.versionCode + ")"
+}
