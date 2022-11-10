@@ -3,11 +3,11 @@ name: Upload Apk to Firebase Distribution
 on:
   push:
     branches: 
-#    - master
+    - master
     - develop
   pull_request:
     branches: 
-#    - master
+    - master
     - develop
 
 jobs:
@@ -28,7 +28,12 @@ jobs:
       run: chmod +x gradlew
     - name: Build with Gradle
       run: ./gradlew assembleDebug
- 
+  
+  upload:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
     - name: Upload to Firebase App Distribution
       uses: wzieba/Firebase-Distribution-Github-Action@v1.4.0
       with:
@@ -38,6 +43,11 @@ jobs:
         groups: android
         releaseNotesFile: release_note.md
 
+  notify:
+    needs: [build, upload]
+    runs-on: ubuntu-latest
+    
+    steps:
     - name: Post to a Slack channel
       id: slack
       uses: slackapi/slack-github-action@v1.23.0
