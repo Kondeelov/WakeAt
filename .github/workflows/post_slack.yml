@@ -44,8 +44,7 @@ jobs:
       id: version
       run: |
         export versionName="$(./gradlew app:printVersionName)"
-        echo "$versionName"
-        echo "version=$versionName" >> GITHUB_OUTPUT
+        echo "version=$versionName" >> $GITHUB_OUTPUT
 
     - name: Post build status to a Slack channel
       id: slack
