@@ -45,6 +45,15 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
+    
+    - name: Get release notes
+      id: release_note
+      run: | 
+        export content="$(cat release_note.md)"
+        content=${content//'"'/'\"'/}
+        content=${content//$'\n'/'\n'}
+        echo "release_note=$content" >> $GITHUB_OUTPUT
+        
     - name: Post build status to a Slack channel
       id: slack
       uses: slackapi/slack-github-action@v1.23.0
