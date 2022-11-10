@@ -76,7 +76,7 @@ jobs:
                   },
                   {
                     "type": "mrkdwn",
-                    "text": "*Version*\n ${{ github.ref_name }}"
+                    "text": "*Version*\n ${{ steps.version.outputs.version }}"
                   }
                 ]
               }
