@@ -3,11 +3,11 @@ name: Upload Apk to Firebase Distribution
 on:
   push:
     branches: 
-#     - master
+    - master
     - develop
   pull_request:
-    branches: 
-#     - master
+    branches:
+    - master
     - develop
 
 jobs:
