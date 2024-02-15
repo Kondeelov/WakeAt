@@ -47,6 +47,9 @@ jobs:
     
     steps:
 
+    - name: List Files
+      run: echo "$(ls)"
+
     - name: Test output
       run: echo "$(cat release_note.md)"
     
