@@ -82,7 +82,7 @@ jobs:
                 "type": "section",
                 "text": {
                   "type": "mrkdwn",
-                  "text": "${{ steps.release_note.outputs.release_note }}"
+                  "text": "*Feature*\n${{ steps.release_note.outputs.release_note }}"
                 }
               },
               {
