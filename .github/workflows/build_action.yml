@@ -42,18 +42,16 @@ jobs:
 #        releaseNotesFile: release_note.md
 
   notify:
-#    needs: [build]
+    needs: [build]
     runs-on: ubuntu-latest
     
     steps:
 
-    - uses: actions/checkout@v4
-
-    - name: List Files
-      run: echo "$(ls)"
-
-    - name: Test output
-      run: echo "$(cat release_note.md)"
+    - name: Get version
+      id: version
+      run: |
+        export versionName="$(./gradlew -q app:printVersionName)"
+        echo "version=$versionName" >> $GITHUB_OUTPUT
     
     - name: Get release notes
       id: release_note
