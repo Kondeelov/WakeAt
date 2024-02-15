@@ -44,6 +44,19 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+
+    val flavorEnv = "env"
+    flavorDimensions.addAll(listOf(flavorEnv))
+
+    productFlavors {
+        create("dev") {
+            applicationIdSuffix = ".dev"
+        }
+
+        create("production") {
+            dimension = flavorEnv
+        }
+    }
 }
 
 dependencies {
