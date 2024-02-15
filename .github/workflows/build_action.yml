@@ -42,7 +42,7 @@ jobs:
 #        releaseNotesFile: release_note.md
 
   notify:
-    needs: [build]
+#    needs: [build]
     runs-on: ubuntu-latest
     
     steps:
