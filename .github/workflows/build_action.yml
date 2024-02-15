@@ -49,7 +49,7 @@ jobs:
     
     - name: Get release notes
       id: release_note
-      run: | 
+      run: |
         export content="$(cat release_note.md)"
         content=${content//'"'/'\"'/}
         content=${content//$'\n'/'\n'}
@@ -74,7 +74,7 @@ jobs:
                 "type": "section",
                 "text": {
                   "type": "mrkdwn",
-                  "text": "*Feature*\n${{ steps.release_note.outputs.release_note }}"
+                  "text": "${{ steps.release_note.outputs.release_note }}"
                 }
               },
               {
