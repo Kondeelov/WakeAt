@@ -1,85 +1,43 @@
 package com.kondee.wakeat
 
-import androidx.appcompat.app.AppCompatActivity
-import com.kondee.wakeat.MainActivity.onOptionMenuCreated
-import com.kondee.wakeat.MainActivity.onOptionItemSelected
 import android.os.Bundle
-import androidx.databinding.DataBindingUtil
-import com.kondee.wakeat.R
-import android.os.Parcelable
-import com.kondee.wakeat.MainFragment
-import android.content.Intent
-import com.kondee.wakeat.ForegroundLocationService
-import com.kondee.wakeat.service.ServiceConstant
-import android.app.Activity
-import android.view.Menu
-import android.view.MenuItem
-import com.kondee.wakeat.databinding.ActivityMainBinding
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
+import com.kondee.wakeat.ui.theme.WakeAtTheme
 
-class MainActivity : AppCompatActivity() {
-    var binding: ActivityMainBinding? = null
-    private var menuCreatedListener: onOptionMenuCreated? = null
-    private var itemSelectedListener: onOptionItemSelected? = null
+class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
-        initInstance()
-    }
-
-    private fun initInstance() {
-        setSupportActionBar(binding!!.toolBar)
-        val parcelable = intent.getParcelableExtra<Parcelable>("parcelable")
-        supportFragmentManager.beginTransaction()
-            .replace(binding!!.contentContainer.id, MainFragment.newInstance(parcelable), "MainFragment")
-            .commit()
-        val intent = Intent(this, ForegroundLocationService::class.java)
-        intent.action = ServiceConstant.STOPFOREGROUND_ACTION
-        startService(intent)
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == 0x1 && resultCode == RESULT_OK) {
-            if (supportFragmentManager.findFragmentById(R.id.contentContainer) is MainFragment) {
-                (supportFragmentManager.findFragmentById(R.id.contentContainer) as MainFragment?)!!.updateCameraPosition()
+        setContent {
+            WakeAtTheme {
+                // A surface container using the 'background' color from the theme
+                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+                    Greeting("Android")
+                }
             }
         }
     }
+}
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.location, menu)
-        if (menuCreatedListener != null) {
-            menuCreatedListener!!.onMenuCreated(menu)
-        }
-        return super.onCreateOptionsMenu(menu)
-    }
+@Composable
+fun Greeting(name: String, modifier: Modifier = Modifier) {
+    Text(
+        text = "Hello $name!",
+        modifier = modifier
+    )
+}
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == R.id.location) {
-            if (itemSelectedListener != null) {
-                itemSelectedListener!!.onMenuSelected()
-            }
-        }
-        return super.onOptionsItemSelected(item)
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-    }
-
-    interface onOptionMenuCreated {
-        fun onMenuCreated(menu: Menu?)
-    }
-
-    fun setOnOptionMenuCreatedListener(menuCreatedListener: onOptionMenuCreated?) {
-        this.menuCreatedListener = menuCreatedListener
-    }
-
-    interface onOptionItemSelected {
-        fun onMenuSelected()
-    }
-
-    fun setOnOptionItemSelectedListener(itemSelectedListener: onOptionItemSelected?) {
-        this.itemSelectedListener = itemSelectedListener
+@Preview(showBackground = true)
+@Composable
+fun GreetingPreview() {
+    WakeAtTheme {
+        Greeting("Android")
     }
 }
