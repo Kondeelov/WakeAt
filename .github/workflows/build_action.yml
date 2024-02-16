@@ -80,7 +80,7 @@ jobs:
       - name: Get release notes
         id: release_notes
         run: |
-          export content="$(cat release_note.md)"
+          export content="$(cat release_notes.md)"
           content=${content//'"'/'\"'/}
           content=${content//$'\n'/'\n'}
           echo "release_notes=$content" >> $GITHUB_OUTPUT
