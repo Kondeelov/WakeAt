@@ -56,8 +56,6 @@ jobs:
 #          status: completed
 #          whatsNewDirectory: deploy/whatsnew
 
-#  app/build/outputs/bundle/productionRelease/app-production-release.aab
-
   notify:
 
     needs: [ build ]

@@ -5,10 +5,13 @@ on:
 #    branches:
 #      - master
 #      - develop
-  pull_request:
-    branches:
-      - master
-      - develop
+  push:
+    tags:
+      - '*-release-alpha'
+#  pull_request:
+#    branches:
+#      - master
+#      - develop
 
 jobs:
   #  build:
