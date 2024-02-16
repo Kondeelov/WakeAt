@@ -39,6 +39,10 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      release_note: ${{ steps.release_note.release_note }}
+
     steps:
 
       - uses: actions/checkout@v4
@@ -73,6 +77,14 @@ jobs:
           export versionName="$(./gradlew -q app:printVersionName)"
           echo "version=$versionName" >> $GITHUB_OUTPUT
 
+      - name: Get release notes
+        id: release_note
+        run: |
+          export content="$(cat release_note.md)"
+          content=${content//'"'/'\"'/}
+          content=${content//$'\n'/'\n'}
+          echo "release_note=$content" >> $GITHUB_OUTPUT
+
       - name: Upload to Firebase App Distribution
         uses: wzieba/Firebase-Distribution-Github-Action@v1.7.0
         with:
@@ -101,14 +113,6 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Get release notes
-        id: release_note
-        run: |
-          export content="$(cat release_note.md)"
-          content=${content//'"'/'\"'/}
-          content=${content//$'\n'/'\n'}
-          echo "release_note=$content" >> $GITHUB_OUTPUT
-
       - name: Post build status to a Slack channel
         id: slack
         uses: slackapi/slack-github-action@v1.25.0
@@ -128,7 +132,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "*Feature*\n${{ steps.release_note.outputs.release_note }}"
+                    "text": "*Feature*\n${{ needs.build.outputs.release_note }}"
                   }
                 },
                 {
@@ -140,7 +144,7 @@ jobs:
                     },
                     {
                       "type": "mrkdwn",
-                      "text": "*Version*\n${{ needs.build.steps.version.outputs.version }}"
+                      "text": "*Version*\n${{ needs.build.outputs.version }}"
                     }
                   ]
                 }
