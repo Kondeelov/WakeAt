@@ -49,7 +49,7 @@ jobs:
           releaseFiles: app/build/outputs/bundle/productionRelease/app-production-release.aab
           serviceAccountJsonPlainText: ${{ secrets.PUBLISH_SERVICE_ACCOUNT_JSON }}
           packageName: com.kondee.wakeat
-          track: qa
+          track: internal
 
 #          userFraction: 0.33
 #          status: completed
