@@ -12,3 +12,4 @@ keystore.jks
 *.apk
 app/production/release/output-metadata.json
 signing.properties
+keystore.jks.asc
