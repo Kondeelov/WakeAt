@@ -8,3 +8,12 @@
 /captures
 .externalNativeBuild
 .idea/misc.xml
+app/production/release/output-metadata.json
+app/production/release/app-production-release.apk
+.idea/migrations.xml
+.idea/kotlinc.xml
+.idea/inspectionProfiles/Project_Default.xml
+.idea/deploymentTargetDropDown.xml
+signing.properties
+keystore.jks.asc
+keystore.jks

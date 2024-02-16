@@ -1,0 +1,125 @@
+name: Deploy app to Google Play Internal Store
+
+on:
+  workflow_dispatch:
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - uses: actions/checkout@v4
+
+      - name: set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'zulu'
+          cache: gradle
+
+      - name: Prepare Keystore
+        run: |
+          echo "${{ secrets.ENCRYPTED_KEY_STORE }}" > keystore.asc
+          gpg -d --passphrase "${{ secrets.KEY_STORE_PASSPHRASE }}" --batch keystore.asc > keystore.jks
+
+      - name: Prepare Keystore variables
+        run: |
+          echo "STORE_FILE_NAME=keystore.jks" &>> signing.properties
+          echo "STORE_PASSWORD=${{ secrets.KEY_PASSWORD }}" &>> signing.properties
+          echo "KEY_ALIAS=${{ secrets.KEY_ALIAS }}" &>> signing.properties
+          echo "KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}" &>> signing.properties
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Build with Gradle
+        run: ./gradlew bundleProductionRelease
+
+      - name: Get version
+        id: version
+        run: |
+          export versionName="$(./gradlew -q app:printVersionName)"
+          echo "version=$versionName" >> $GITHUB_OUTPUT
+
+      - name: Upload Android Release to Play Store
+        uses: r0adkll/upload-google-play@v1.1.3
+        with:
+          releaseFiles: app/build/outputs/bundle/productionRelease/app-production-release.aab
+          serviceAccountJsonPlainText: ${{ secrets.PUBLISH_SERVICE_ACCOUNT_JSON }}
+          packageName: com.kondee.wakeat
+          track: qa
+
+#          userFraction: 0.33
+#          status: completed
+#          whatsNewDirectory: deploy/whatsnew
+
+#  app/build/outputs/bundle/productionRelease/app-production-release.aab
+
+  notify:
+
+    needs: [ build ]
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'zulu'
+          cache: gradle
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Get release notes
+        id: release_note
+        run: |
+          export content="$(cat release_note.md)"
+          content=${content//'"'/'\"'/}
+          content=${content//$'\n'/'\n'}
+          echo "release_note=$content" >> $GITHUB_OUTPUT
+
+      - name: Post build status to a Slack channel
+        id: slack
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          channel-id: 'C049MCCJ38B'
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "<!channel> Deploy Application to Google Play Internal Store: ${{ job.status }}\n"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Feature*\n${{ steps.release_note.outputs.release_note }}"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Branch*\n${{ github.ref_name }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Version*\n${{ steps.version.outputs.version }}"
+                    }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
