@@ -8,3 +8,7 @@
 /captures
 .externalNativeBuild
 .idea/misc.xml
+keystore.jks
+*.apk
+app/production/release/output-metadata.json
+signing.properties

@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.konan.properties.loadProperties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -20,12 +22,24 @@ android {
         }
     }
 
+    signingConfigs {
+        create("release") {
+            val properties = loadProperties(rootProject.file("signing.properties").path)
+            storeFile = rootProject.file(properties.getProperty("STORE_FILE_NAME"))
+            storePassword = properties.getProperty("STORE_PASSWORD") ?: ""
+            keyAlias = properties.getProperty("KEY_ALIAS") ?: ""
+            keyPassword = properties.getProperty("KEY_PASSWORD") ?: ""
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            signingConfig = signingConfigs.getByName("release")
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
