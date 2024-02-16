@@ -50,6 +50,7 @@ jobs:
           serviceAccountJsonPlainText: ${{ secrets.PUBLISH_SERVICE_ACCOUNT_JSON }}
           packageName: com.kondee.wakeat
           track: internal
+          status: draft
 
 #          userFraction: 0.33
 #          status: completed
