@@ -1,17 +1,9 @@
 name: Upload Apk to Firebase Distribution
 
 on:
-#  push:
-#    branches:
-#      - master
-#      - develop
   push:
     tags:
       - '*-release-alpha'
-#  pull_request:
-#    branches:
-#      - master
-#      - develop
 
 jobs:
   #  build:
@@ -148,7 +140,7 @@ jobs:
                     },
                     {
                       "type": "mrkdwn",
-                      "text": "*Version*\n${{ steps.version.outputs.version }}"
+                      "text": "*Version*\n${{ needs.build.version.outputs.version }}"
                     }
                   ]
                 }
