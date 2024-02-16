@@ -136,11 +136,11 @@ jobs:
                   "fields": [
                     {
                       "type": "mrkdwn",
-                      "text": "*Branch*\n${{ github.ref_name }}"
+                      "text": "*Tag*\n${{ github.ref_name }}"
                     },
                     {
                       "type": "mrkdwn",
-                      "text": "*Version*\n${{ needs.build.version.outputs.version }}"
+                      "text": "*Version*\n${{ needs.build.steps.version.outputs.version }}"
                     }
                   ]
                 }
