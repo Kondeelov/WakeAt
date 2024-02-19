@@ -82,12 +82,6 @@ jobs:
         run: | 
           ./gradlew assembleDevRelease 2>&1 | tee log.txt
 
-      - name: Build failed backup
-        id: build_failed_backup
-        if: ${{ failure() }}
-        run: |
-          echo "exception=$(awk '/Task.*FAILED/,/Compilation error/' log.txt)" >> $GITHUB_OUTPUT
-
       - name: Get release notes
         id: release_notes
         run: |
@@ -104,6 +98,12 @@ jobs:
           file: app/build/outputs/apk/dev/release/app-dev-release.apk
           groups: android
           releaseNotesFile: release_notes.md
+
+      - name: Build failed backup
+        id: build_failed_backup
+        if: ${{ failure() }}
+        run: |
+          echo "exception=$(awk '/Task.*FAILED/,/Compilation error/' log.txt)" >> $GITHUB_OUTPUT
 
   notify_success:
     needs: [ build ]
