@@ -106,7 +106,9 @@ jobs:
           export exception="$(awk '/Task.*FAILED/,/Compilation error/' log.txt)"
           exception=${exception//'"'/'\"'/}
           exception=${exception//$'\n'/'\n'}
+          echo "$exception"
           echo "exception=$exception" >> $GITHUB_OUTPUT
+          echo "${{ steps.build_exception.outputs.exception }}"
 
   notify_success:
     needs: [ build ]
@@ -158,6 +160,10 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ failure() }}
     steps:
+      - name: Test Exception
+        run: |
+            echo "${{ needs.build.outputs.exception }}"
+
       - name: Notify Failure
         id: notify_failure
         uses: slackapi/slack-github-action@v1.25.0
