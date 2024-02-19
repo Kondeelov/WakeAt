@@ -77,11 +77,6 @@ jobs:
           export versionName="$(./gradlew -q app:printVersionName)"
           echo "version=$versionName" >> $GITHUB_OUTPUT
 
-      - name: Build DevRelease APK with Gradle
-        id: build
-        run: | 
-          ./gradlew assembleDevRelease 2>&1 | tee log.txt
-
       - name: Get release notes
         id: release_notes
         run: |
@@ -89,6 +84,11 @@ jobs:
           content=${content//'"'/'\"'/}
           content=${content//$'\n'/'\n'}
           echo "release_notes=$content" >> $GITHUB_OUTPUT
+
+      - name: Build DevRelease APK with Gradle
+        id: build
+        run: | 
+          ./gradlew assembleDevRelease 2>&1 | tee log.txt
 
       - name: Upload to Firebase App Distribution
         uses: wzieba/Firebase-Distribution-Github-Action@v1.7.0
@@ -103,7 +103,15 @@ jobs:
         id: build_failed_backup
         if: ${{ failure() }}
         run: |
-          echo "exception=$(awk '/Task.*FAILED/,/Compilation error/' log.txt)" >> $GITHUB_OUTPUT
+#          export content="$(cat release_notes.md)"
+#          content=${content//'"'/'\"'/}
+#          content=${content//$'\n'/'\n'}
+#          echo "release_notes=$content" >> $GITHUB_OUTPUT
+
+          export exception="$(awk '/Task.*FAILED/,/Compilation error/' log.txt)"
+          exception=${exception//'"'/'\"'/}
+          exception=${exception//$'\n'/'\n'}
+          echo "exception=$exception" >> $GITHUB_OUTPUT
 
   notify_success:
     needs: [ build ]
