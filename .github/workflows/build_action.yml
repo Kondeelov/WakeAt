@@ -103,11 +103,6 @@ jobs:
         id: build_failed_backup
         if: ${{ failure() }}
         run: |
-#          export content="$(cat release_notes.md)"
-#          content=${content//'"'/'\"'/}
-#          content=${content//$'\n'/'\n'}
-#          echo "release_notes=$content" >> $GITHUB_OUTPUT
-
           export exception="$(awk '/Task.*FAILED/,/Compilation error/' log.txt)"
           exception=${exception//'"'/'\"'/}
           exception=${exception//$'\n'/'\n'}
