@@ -106,6 +106,7 @@ jobs:
           export exception="$(awk '/Task.*FAILED/,/Compilation error/' log.txt)"
           exception=${exception//'"'/'\"'/}
           exception=${exception//$'\n'/'\n'}
+          echo "$exception"
           echo "exception=$exception" >> $GITHUB_OUTPUT
 
   notify_success:
