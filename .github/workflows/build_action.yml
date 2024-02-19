@@ -80,9 +80,13 @@ jobs:
       - name: Build DevRelease APK with Gradle
         id: build
         run: | 
-          ./gradlew assembleDevRelease > /dev/null 2> error.log 
-          echo "$(cat error.log)"
-          echo "exception=$(cat error.log)" >> $GITHUB_OUTPUT
+          ./gradlew assembleDevRelease 2>&1 | tee log.txt
+
+      - name: Build failed backup
+        id: build_failed_backup
+        if: ${{ failure() }}
+        run: |
+          echo "exception=$(awk '/Task.*FAILED/,/Compilation error/' log.txt)" >> $GITHUB_OUTPUT
 
       - name: Get release notes
         id: release_notes
@@ -118,7 +122,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "<!channel> Upload app to FirebaseDistribution: ${{ needs.build.status }}\n"
+                    "text": "<!channel> :white_check_mark: Upload app to FirebaseDistribution: ${{ needs.build.status }}\n"
                   }
                 },
                 {
@@ -163,7 +167,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "<!channel> Upload app to FirebaseDistribution: ${{ needs.build.status }}\n"
+                    "text": "<!channel> :x: Upload app to FirebaseDistribution: ${{ needs.build.status }}\n"
                   }
                 },
                 {
