@@ -46,30 +46,33 @@ jobs:
 
     steps:
 
-      - uses: actions/checkout@v4
+      - name: Check out source code.
+        uses: actions/checkout@v4
 
-      - name: set up JDK 17
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'zulu'
           cache: gradle
 
-      - name: Prepare Keystore
+      - name: Prepare Keystore file
         run: |
           echo "${{ secrets.ENCRYPTED_KEY_STORE }}" > keystore.asc
           gpg -d --passphrase "${{ secrets.KEY_STORE_PASSPHRASE }}" --batch keystore.asc > keystore.jks
 
-      - name: Prepare Keystore variables
+      - name: Prepare SigningConfig variables
         run: |
           echo "STORE_FILE_NAME=keystore.jks" &>> signing.properties
           echo "STORE_PASSWORD=${{ secrets.KEY_PASSWORD }}" &>> signing.properties
           echo "KEY_ALIAS=${{ secrets.KEY_ALIAS }}" &>> signing.properties
           echo "KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}" &>> signing.properties
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-      - name: Build with Gradle
+#      Gemini said ubuntu should grant this permission already.
+#      - name: Grant execute permission for gradlew
+#        run: chmod +x gradlew
+
+      - name: Build DevRelease APK with Gradle
         run: ./gradlew assembleDevRelease
 
       - name: Get version
@@ -95,25 +98,11 @@ jobs:
           groups: android
           releaseNotesFile: release_notes.md
 
-  notify:
-
+  notify_on_success:
     needs: [ build ]
-
+    if: ${{ needs.build.result == 'success' }}
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v4
-
-      - name: set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'zulu'
-          cache: gradle
-
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
       - name: Post build status to a Slack channel
         id: slack
         uses: slackapi/slack-github-action@v1.25.0
@@ -151,7 +140,50 @@ jobs:
                 }
               ]
             }
-          fail_notify: true
-          on_failure: ${{ needs.build.conclusion == 'failure' }}
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
+  notify_on_failure:
+    needs: [ build ]
+    if: ${{ needs.build.result == 'failure' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post build status to a Slack channel
+        id: slack
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          channel-id: 'C049MCCJ38B'
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "<!channel> Upload app to FirebaseDistribution: ${{ needs.build.status }}\n"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Exception*\n${{ needs.build.outputs.exception }}"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Tag*\n${{ github.ref_name }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Version*\n${{ needs.build.outputs.version }}"
+                    }
+                  ]
+                }
+              ]
+            }
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
