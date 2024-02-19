@@ -79,7 +79,9 @@ jobs:
 
       - name: Build DevRelease APK with Gradle
         id: build
-        run: ./gradlew assembleDevRelease > /dev/null 2> error.log || echo "exception=$(cat error.log)" >> $GITHUB_OUTPUT
+        run: | 
+          ./gradlew assembleDevRelease > /dev/null 2> error.log 
+          echo "exception=$(cat error.log)" >> $GITHUB_OUTPUT
 
       - name: Get release notes
         id: release_notes
@@ -98,13 +100,12 @@ jobs:
           groups: android
           releaseNotesFile: release_notes.md
 
-  test_notify:
+  notify_success:
     needs: [ build ]
     runs-on: ubuntu-latest
-    if: always()
+    if: ${{ success() }}
     steps:
       - name: Notify Success
-        if: ${{ success() }}
         id: notify_success
         uses: slackapi/slack-github-action@v1.25.0
         with:
@@ -144,8 +145,12 @@ jobs:
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
 
+  notify_failure:
+    needs: [ build ]
+    runs-on: ubuntu-latest
+    if: ${{ failure() }}
+    steps:
       - name: Notify Failure
-        if: ${{ failure() }}
         id: notify_failure
         uses: slackapi/slack-github-action@v1.25.0
         with:
