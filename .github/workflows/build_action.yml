@@ -2,6 +2,8 @@ name: Upload Apk to Firebase Distribution
 
 on:
   push:
+    branches:
+      - 'master'
     tags:
       - '*-release-alpha'
   workflow_dispatch:
@@ -68,10 +70,6 @@ jobs:
           echo "KEY_ALIAS=${{ secrets.KEY_ALIAS }}" &>> signing.properties
           echo "KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}" &>> signing.properties
 
-#      Gemini said ubuntu should grant this permission already.
-#      - name: Grant execute permission for gradlew
-#        run: chmod +x gradlew
-
       - name: Get version
         id: version
         run: |
@@ -98,209 +96,89 @@ jobs:
           groups: android
           releaseNotesFile: release_notes.md
 
-#  test_notify:
-#    needs: [ build ]
-#    runs-on: ubuntu-latest
-#    if: ${{ success() || failure() }}
-#    steps:
-#      - name: Notify Success
-#        if: ${{ success() }}
-#        id: notify_success
-#        uses: slackapi/slack-github-action@v1.25.0
-#        with:
-#          channel-id: 'C049MCCJ38B'
-#          payload: |
-#            {
-#              "blocks": [
-#                {
-#                  "type": "section",
-#                  "text": {
-#                    "type": "mrkdwn",
-#                    "text": "<!channel> Upload app to FirebaseDistribution: ${{ needs.build.status }}\n"
-#                  }
-#                },
-#                {
-#                  "type": "section",
-#                  "text": {
-#                    "type": "mrkdwn",
-#                    "text": "*Exception*\n${{ needs.build.outputs.exception }}"
-#                  }
-#                },
-#                {
-#                  "type": "section",
-#                  "fields": [
-#                    {
-#                      "type": "mrkdwn",
-#                      "text": "*Tag*\n${{ github.ref_name }}"
-#                    },
-#                    {
-#                      "type": "mrkdwn",
-#                      "text": "*Version*\n${{ needs.build.outputs.version }}"
-#                    }
-#                  ]
-#                }
-#              ]
-#            }
-#        env:
-#          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-#
-#      - name: Notify Failure
-#        if: ${{ failure() }}
-#        id: notify_failure
-#        uses: slackapi/slack-github-action@v1.25.0
-#        with:
-#          channel-id: 'C049MCCJ38B'
-#          payload: |
-#            {
-#              "blocks": [
-#                {
-#                  "type": "section",
-#                  "text": {
-#                    "type": "mrkdwn",
-#                    "text": "<!channel> Upload app to FirebaseDistribution: ${{ needs.build.status }}\n"
-#                  }
-#                },
-#                {
-#                  "type": "section",
-#                  "text": {
-#                    "type": "mrkdwn",
-#                    "text": "*Exception*\n${{ needs.build.outputs.exception }}"
-#                  }
-#                },
-#                {
-#                  "type": "section",
-#                  "fields": [
-#                    {
-#                      "type": "mrkdwn",
-#                      "text": "*Tag*\n${{ github.ref_name }}"
-#                    },
-#                    {
-#                      "type": "mrkdwn",
-#                      "text": "*Version*\n${{ needs.build.outputs.version }}"
-#                    }
-#                  ]
-#                }
-#              ]
-#            }
-#        env:
-#          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-
   test_notify:
     needs: [ build ]
     runs-on: ubuntu-latest
     if: ${{ success() || failure() }}
     steps:
       - name: Notify Success
+        if: ${{ success() }}
         id: notify_success
         uses: slackapi/slack-github-action@v1.25.0
         with:
-          channel-id: 'C049MCCJ38B';
-          - if: ${{ success() }}
-            payload: |
-              {
-                "blocks": [
-                  {
-                    "type": "section",
-                    "text": {
-                      "type": "mrkdwn",
-                      "text": "<!channel> Upload app to FirebaseDistribution: ${{ needs.build.status }}\n"
-                    }
-                  },
-                  {
-                    "type": "section",
-                    "text": {
-                      "type": "mrkdwn",
-                      "text": "*Exception*\n${{ needs.build.outputs.exception }}"
-                    }
-                  },
-                  {
-                    "type": "section",
-                    "fields": [
-                      {
-                        "type": "mrkdwn",
-                        "text": "*Tag*\n${{ github.ref_name }}"
-                      },
-                      {
-                        "type": "mrkdwn",
-                        "text": "*Version*\n${{ needs.build.outputs.version }}"
-                      }
-                    ]
+          channel-id: 'C049MCCJ38B'
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "<!channel> Upload app to FirebaseDistribution: ${{ needs.build.status }}\n"
                   }
-                ]
-              }
-          - if: ${{ failure() }}
-            payload: |
-              {
-                "blocks": [
-                  {
-                    "type": "section",
-                    "text": {
-                      "type": "mrkdwn",
-                      "text": "<!channel> Upload app to FirebaseDistribution: ${{ needs.build.status }}\n"
-                    }
-                  },
-                  {
-                    "type": "section",
-                    "text": {
-                      "type": "mrkdwn",
-                      "text": "*Exception*\n${{ needs.build.outputs.exception }}"
-                    }
-                  },
-                  {
-                    "type": "section",
-                    "fields": [
-                      {
-                        "type": "mrkdwn",
-                        "text": "*Tag*\n${{ github.ref_name }}"
-                      },
-                      {
-                        "type": "mrkdwn",
-                        "text": "*Version*\n${{ needs.build.outputs.version }}"
-                      }
-                    ]
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Exception*\n${{ needs.build.outputs.exception }}"
                   }
-                ]
-              }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Tag*\n${{ github.ref_name }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Version*\n${{ needs.build.outputs.version }}"
+                    }
+                  ]
+                }
+              ]
+            }
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
 
-#      - name: Notify Failure
-#        if: ${{ failure() }}
-#        id: notify_failure
-#        uses: slackapi/slack-github-action@v1.25.0
-#        with:
-#          channel-id: 'C049MCCJ38B'
-#          payload: |
-#            {
-#              "blocks": [
-#                {
-#                  "type": "section",
-#                  "text": {
-#                    "type": "mrkdwn",
-#                    "text": "<!channel> Upload app to FirebaseDistribution: ${{ needs.build.status }}\n"
-#                  }
-#                },
-#                {
-#                  "type": "section",
-#                  "text": {
-#                    "type": "mrkdwn",
-#                    "text": "*Exception*\n${{ needs.build.outputs.exception }}"
-#                  }
-#                },
-#                {
-#                  "type": "section",
-#                  "fields": [
-#                    {
-#                      "type": "mrkdwn",
-#                      "text": "*Tag*\n${{ github.ref_name }}"
-#                    },
-#                    {
-#                      "type": "mrkdwn",
-#                      "text": "*Version*\n${{ needs.build.outputs.version }}"
-#                    }
-#                  ]
-#                }
-#              ]
-#            }
-#        env:
-#          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+      - name: Notify Failure
+        if: ${{ failure() }}
+        id: notify_failure
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          channel-id: 'C049MCCJ38B'
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "<!channel> Upload app to FirebaseDistribution: ${{ needs.build.status }}\n"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Exception*\n${{ needs.build.outputs.exception }}"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Tag*\n${{ github.ref_name }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Version*\n${{ needs.build.outputs.version }}"
+                    }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
