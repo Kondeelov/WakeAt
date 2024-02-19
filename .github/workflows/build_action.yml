@@ -150,5 +150,7 @@ jobs:
                 }
               ]
             }
+          fail_notify: true
+          on_failure: ${{ needs.build.conclusion == 'failure' }}
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
