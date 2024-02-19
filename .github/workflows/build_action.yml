@@ -87,7 +87,7 @@ jobs:
 
       - name: Build DevRelease APK with Gradle
         id: build
-        run: | 
+        run: |
           ./gradlew assembleDevRelease 2>&1 | tee log.txt
 
       - name: Upload to Firebase App Distribution
@@ -107,6 +107,7 @@ jobs:
           exception=${exception//'"'/'\"'/}
           exception=${exception//$'\n'/'\n'}
           echo "exception=$exception" >> $GITHUB_OUTPUT
+          echo "$exception"
 
   notify_success:
     needs: [ build ]
@@ -160,7 +161,7 @@ jobs:
     steps:
       - name: Test Exception
         run: |
-            echo "${{ needs.build.outputs.exception }}"
+          echo "${{ needs.build.outputs.exception }}"
 
       - name: Notify Failure
         id: notify_failure
@@ -183,6 +184,19 @@ jobs:
                     "type": "mrkdwn",
                     "text": "*Exception*\n${{ needs.build.outputs.exception }}"
                   }
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": ":github: Failed action!"
+                      },
+                      "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                    }
+                  ]
                 },
                 {
                   "type": "section",
