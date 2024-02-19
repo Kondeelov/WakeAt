@@ -149,7 +149,7 @@ jobs:
     steps:
       - name: Notify Success
         if: ${{ success() }}
-        id: slack notify success
+        id: notify_success
         uses: slackapi/slack-github-action@v1.25.0
         with:
           channel-id: 'C049MCCJ38B'
@@ -190,7 +190,7 @@ jobs:
 
       - name: Notify Failure
         if: ${{ failure() }}
-        id: slack notify failure
+        id: notify_failure
         uses: slackapi/slack-github-action@v1.25.0
         with:
           channel-id: 'C049MCCJ38B'
