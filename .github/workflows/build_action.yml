@@ -146,6 +146,7 @@ jobs:
   test_notify:
     needs: [ build ]
     runs-on: ubuntu-latest
+    if: ${{ success() || failure() }}
     steps:
       - name: Notify Success
         if: ${{ success() }}
