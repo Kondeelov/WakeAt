@@ -84,7 +84,7 @@ jobs:
           content=${content//'"'/'\"'/}
           content=${content//$'\n'/'\n'}
           echo "release_notes=$content" >> $GITHUB_OUTPUT
-          echo "${{ steps.release_notes.outputs.release_notes }}"
+          echo "${{ jobs.build.steps.release_notes.outputs.release_notes }}"
 
       - name: Build DevRelease APK with Gradle
         id: build
