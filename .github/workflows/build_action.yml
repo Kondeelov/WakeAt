@@ -100,8 +100,8 @@ jobs:
 
   notify_on_success:
     needs: [ build ]
-    if: ${{ needs.build.result == 'success' }}
     runs-on: ubuntu-latest
+    if: ${{ success() }}
     steps:
       - name: Post build status to a Slack channel
         id: slack
@@ -145,8 +145,8 @@ jobs:
 
   notify_on_failure:
     needs: [ build ]
-    if: ${{ needs.build.result == 'failure' }}
     runs-on: ubuntu-latest
+    if: ${{ failure() }}
     steps:
       - name: Post build status to a Slack channel
         id: slack
