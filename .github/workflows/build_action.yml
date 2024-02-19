@@ -45,6 +45,7 @@ jobs:
     outputs:
       version: ${{ steps.version.outputs.version }}
       release_notes: ${{ steps.release_notes.outputs.release_notes }}
+      exception: ${{ steps.build.outputs.exception }}
 
     steps:
 
@@ -77,7 +78,8 @@ jobs:
           echo "version=$versionName" >> $GITHUB_OUTPUT
 
       - name: Build DevRelease APK with Gradle
-        run: ./gradlew assembleDevRelease
+        id: build
+        run: ./gradlew assembleDevRelease > /dev/null 2> error.log || echo "exception=$(cat error.log)" >> $GITHUB_OUTPUT
 
       - name: Get release notes
         id: release_notes
