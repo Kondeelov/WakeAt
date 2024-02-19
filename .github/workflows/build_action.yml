@@ -45,7 +45,7 @@ jobs:
     outputs:
       version: ${{ steps.version.outputs.version }}
       release_notes: ${{ steps.release_notes.outputs.release_notes }}
-      exception: ${{ steps.build.outputs.exception }}
+      exception: ${{ steps.build_exception.outputs.exception }}
 
     steps:
 
@@ -99,14 +99,13 @@ jobs:
           groups: android
           releaseNotesFile: release_notes.md
 
-      - name: Build failed backup
-        id: build_failed_backup
+      - name: Get Build Exception
+        id: build_exception
         if: ${{ failure() }}
         run: |
           export exception="$(awk '/Task.*FAILED/,/Compilation error/' log.txt)"
           exception=${exception//'"'/'\"'/}
           exception=${exception//$'\n'/'\n'}
-          echo "$exception"
           echo "exception=$exception" >> $GITHUB_OUTPUT
 
   notify_success:
