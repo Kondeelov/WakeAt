@@ -191,11 +191,10 @@ jobs:
     if: ${{ success() || failure() }}
     steps:
       - name: Notify Success
-#        if: ${{ success() }}
         id: notify_success
         uses: slackapi/slack-github-action@v1.25.0
         with:
-          channel-id: 'C049MCCJ38B',
+          channel-id: 'C049MCCJ38B';
           - if: ${{ success() }}
             payload: |
               {
