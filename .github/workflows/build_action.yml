@@ -81,6 +81,7 @@ jobs:
         id: build
         run: | 
           ./gradlew assembleDevRelease > /dev/null 2> error.log 
+          echo "$(cat error.log)"
           echo "exception=$(cat error.log)" >> $GITHUB_OUTPUT
 
       - name: Get release notes
