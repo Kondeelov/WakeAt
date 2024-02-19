@@ -72,14 +72,14 @@ jobs:
 #      - name: Grant execute permission for gradlew
 #        run: chmod +x gradlew
 
-      - name: Build DevRelease APK with Gradle
-        run: ./gradlew assembleDevRelease
-
       - name: Get version
         id: version
         run: |
           export versionName="$(./gradlew -q app:printVersionName)"
           echo "version=$versionName" >> $GITHUB_OUTPUT
+
+      - name: Build DevRelease APK with Gradle
+        run: ./gradlew assembleDevRelease
 
       - name: Get release notes
         id: release_notes
@@ -98,13 +98,58 @@ jobs:
           groups: android
           releaseNotesFile: release_notes.md
 
-  notify_on_success:
+#  notify:
+#    needs: [ build ]
+#    runs-on: ubuntu-latest
+#    if: ${{ success() }}
+#    steps:
+#      - name: Post build status to a Slack channel
+#        id: slack
+#        uses: slackapi/slack-github-action@v1.25.0
+#        with:
+#          channel-id: 'C049MCCJ38B'
+#          payload: |
+#            {
+#              "blocks": [
+#                {
+#                  "type": "section",
+#                  "text": {
+#                    "type": "mrkdwn",
+#                    "text": "<!channel> Upload app to FirebaseDistribution: ${{ job.status }}\n"
+#                  }
+#                },
+#                {
+#                  "type": "section",
+#                  "text": {
+#                    "type": "mrkdwn",
+#                    "text": "*Release Notes*\n${{ needs.build.outputs.release_notes }}"
+#                  }
+#                },
+#                {
+#                  "type": "section",
+#                  "fields": [
+#                    {
+#                      "type": "mrkdwn",
+#                      "text": "*Tag*\n${{ github.ref_name }}"
+#                    },
+#                    {
+#                      "type": "mrkdwn",
+#                      "text": "*Version*\n${{ needs.build.outputs.version }}"
+#                    }
+#                  ]
+#                }
+#              ]
+#            }
+#        env:
+#          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
+  test_notify:
     needs: [ build ]
     runs-on: ubuntu-latest
-    if: ${{ success() }}
     steps:
-      - name: Post build status to a Slack channel
-        id: slack
+      - name: Notify Success
+        if: ${{ success() }}
+        id: slack notify success
         uses: slackapi/slack-github-action@v1.25.0
         with:
           channel-id: 'C049MCCJ38B'
@@ -115,14 +160,14 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "<!channel> Upload app to FirebaseDistribution: ${{ job.status }}\n"
+                    "text": "<!channel> Upload app to FirebaseDistribution: ${{ needs.build.status }}\n"
                   }
                 },
                 {
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "*Release Notes*\n${{ needs.build.outputs.release_notes }}"
+                    "text": "*Exception*\n${{ needs.build.outputs.exception }}"
                   }
                 },
                 {
@@ -143,13 +188,9 @@ jobs:
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
 
-  notify_on_failure:
-    needs: [ build ]
-    runs-on: ubuntu-latest
-    if: ${{ failure() }}
-    steps:
-      - name: Post build status to a Slack channel
-        id: slack
+      - name: Notify Failure
+        if: ${{ failure() }}
+        id: slack notify failure
         uses: slackapi/slack-github-action@v1.25.0
         with:
           channel-id: 'C049MCCJ38B'
