@@ -62,7 +62,7 @@ jobs:
           ref=${ref//'('/'\('}
           ref=${ref//')'/'\)'}
           echo "$ref"
-          raw=$(git branch -r --contains \'${{ github.ref }}\')
+          raw=$(git branch -r --contains '${{ github.ref }}')
           echo "$raw"
 #          branch="$(echo ${raw//origin\//} ${raw//\(/'\('} ${raw//\)/'\)'} | tr -d '\n')"
 #          echo "{name}=branch" >> $GITHUB_OUTPUT
