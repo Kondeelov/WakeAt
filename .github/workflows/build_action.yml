@@ -48,14 +48,20 @@ jobs:
 
       - name: Check out source code.
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Log refs.
-        run : |
-          echo "refName = ${{ github.ref_name }}"
-          echo "baseRef = ${{ github.base_ref }}"
-          echo "headRef = ${{ github.head_ref }}"
-          echo "refType = ${{ github.ref_type }}"
-          echo "workFlowRef = ${{ github.workflow_ref }}"
+      - name: Get current branch
+        id: check_step
+        # 1. Get the list of branches ref where this tag exists
+        # 2. Remove 'origin/' from that result
+        # 3. Put that string in output
+        # => We can now use function 'contains(list, item)''
+        run: |
+          raw=$(git branch -r --contains ${{ github.ref }})
+          branch="$(echo ${raw//origin\//} | tr -d '\n')"
+          echo "{name}=branch" >> $GITHUB_OUTPUT
+          echo "Branches where this tag exists : $branch."
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
