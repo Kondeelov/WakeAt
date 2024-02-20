@@ -58,7 +58,12 @@ jobs:
         # 3. Put that string in output
         # => We can now use function 'contains(list, item)''
         run: |
-          raw=$(git branch -r --contains \'${{ github.ref }}\')
+          ref="${{ github.ref }}
+          ref=${ref//\(/'\('}
+          ref=${ref//\)/'\)'}
+          echo "$ref"
+          raw=$(git branch -r --contains ${{ github.ref }})
+          echo "$raw"
           branch="$(echo ${raw//origin\//} ${raw//\(/'\('} ${raw//\)/'\)'} | tr -d '\n')"
           echo "{name}=branch" >> $GITHUB_OUTPUT
           echo "Branches where this tag exists : $branch."
