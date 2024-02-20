@@ -60,7 +60,7 @@ jobs:
         run: |
           raw=$(git branch -r --contains '${{ github.ref }}')
           branch_list="$(echo ${raw//origin\//} | tr -d '\n')"
-          echo "branches=branch_list" >> $GITHUB_OUTPUT
+          echo "branches=$branch_list" >> $GITHUB_OUTPUT
           echo "Branches where this tag exists : branch_list."
 
       - name: Exit if not on master branch
