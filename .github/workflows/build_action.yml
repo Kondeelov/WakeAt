@@ -88,7 +88,7 @@ jobs:
       - name: Build DevRelease APK with Gradle
         id: build
         run: |
-          ./gradlew assembleDevRelease 2>&1 | tee log.txt
+          ./gradlew app:assembleDevRelease
 
       - name: Upload to Firebase App Distribution
         uses: wzieba/Firebase-Distribution-Github-Action@v1.7.0
@@ -98,16 +98,6 @@ jobs:
           file: app/build/outputs/apk/dev/release/app-dev-release.apk
           groups: android
           releaseNotesFile: release_notes.md
-
-      - name: Get Build Exception
-        id: build_exception
-        if: ${{ failure() }}
-        run: |
-          export exception="$(awk '/Task.*FAILED/,/Compilation error/' log.txt)"
-          exception=${exception//'"'/'\"'/}
-          exception=${exception//$'\n'/'\n'}
-          echo "exception=$exception" >> $GITHUB_OUTPUT
-          echo "$exception"
 
   notify_success:
     needs: [ build ]
@@ -192,7 +182,7 @@ jobs:
                       "type": "button",
                       "text": {
                         "type": "plain_text",
-                        "text": ":github-ded: Failed action!"
+                        "text": ":github: Failed action!"
                       },
                       "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
                     }

@@ -93,5 +93,7 @@ dependencies {
 }
 
 task("printVersionName") {
-    println("${project.android.defaultConfig.versionName}(${project.android.defaultConfig.versionCode})")
+    doLast {
+        println("${project.android.defaultConfig.versionName}(${project.android.defaultConfig.versionCode})")
+    }
 }
