@@ -42,7 +42,7 @@ jobs:
     outputs:
       version: ${{ steps.version.outputs.version }}
       release_notes: ${{ steps.release_notes.outputs.release_notes }}
-      exception: ${{ steps.build_exception.outputs.exception }}
+      branch: ${{ steps.check_step.outputs.branch }}
 
     steps:
 
@@ -59,7 +59,7 @@ jobs:
         # => We can now use function 'contains(list, item)''
         run: |
           raw=$(git branch -r --contains ${{ github.ref }})
-          branch="$(echo ${raw//origin\//} | tr -d '\n')"
+          branch="$(echo ${raw//origin\//} ${raw//'('/'\('} ${raw//')'/'\)'} | tr -d '\n')"
           echo "{name}=branch" >> $GITHUB_OUTPUT
           echo "Branches where this tag exists : $branch."
 
@@ -160,10 +160,6 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ failure() }}
     steps:
-      - name: Test Exception
-        run: |
-          echo "${{ needs.build.outputs.exception }}"
-
       - name: Notify Failure
         id: notify_failure
         uses: slackapi/slack-github-action@v1.25.0
@@ -183,7 +179,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "*Exception*\n${{ needs.build.outputs.exception }}"
+                    "text": "*You can check error from here*\n"
                   }
                 },
                 {
