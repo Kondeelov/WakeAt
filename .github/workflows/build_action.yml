@@ -64,10 +64,8 @@ jobs:
           echo "Branches where this tag exists : branch_list."
 
       - name: Exit if not on master branch
-#        if: contains(steps.check_step.outputs.branch, 'master') == false
-#        run: exit -1
-        run: |
-          echo "branch=${{ steps.check_step.outputs.branches }}"
+        if: contains(steps.check_step.outputs.branch, 'master') == false
+        run: exit -1
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
