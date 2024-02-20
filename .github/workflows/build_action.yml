@@ -59,8 +59,8 @@ jobs:
         # => We can now use function 'contains(list, item)''
         run: |
           ref="${{ github.ref }}
-          ref=${ref//\(/'\('}
-          ref=${ref//\)/'\)'}
+          ref=${ref//'('/'\('}
+          ref=${ref//')'/'\)'}
           echo "$ref"
           raw=$(git branch -r --contains ${{ github.ref }})
           echo "$raw"
