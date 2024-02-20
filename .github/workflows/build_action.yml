@@ -58,15 +58,14 @@ jobs:
         # 3. Put that string in output
         # => We can now use function 'contains(list, item)''
         run: |
-          ref="${{ github.ref }}"
-          ref=${ref//'('/'\('}
-          ref=${ref//')'/'\)'}
-          echo "$ref"
           raw=$(git branch -r --contains '${{ github.ref }}')
-          echo "$raw"
-#          branch="$(echo ${raw//origin\//} ${raw//\(/'\('} ${raw//\)/'\)'} | tr -d '\n')"
-#          echo "{name}=branch" >> $GITHUB_OUTPUT
-#          echo "Branches where this tag exists : $branch."
+          branch="$(echo ${raw//origin\//} | tr -d '\n')"
+          echo "{name}=branch" >> $GITHUB_OUTPUT
+          echo "Branches where this tag exists : $branch."
+
+      - name: Exit if not on master branch
+        if: contains(steps.check_step.outputs.branch, 'master') == false
+        run: exit -1
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
