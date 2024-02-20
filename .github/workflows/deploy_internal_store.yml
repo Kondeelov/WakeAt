@@ -1,6 +1,11 @@
 name: Deploy app to Google Play Internal Store
 
 on:
+  push:
+    branches:
+      - 'master'
+    tags:
+      - '*-release-production'
   workflow_dispatch:
 
 jobs:
@@ -56,35 +61,13 @@ jobs:
 #          status: completed
 #          whatsNewDirectory: deploy/whatsnew
 
-  notify:
-
+  notify_success:
     needs: [ build ]
-
     runs-on: ubuntu-latest
-
+    if: ${{ success() }}
     steps:
-      - uses: actions/checkout@v4
-
-      - name: set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'zulu'
-          cache: gradle
-
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
-      - name: Get release notes
-        id: release_note
-        run: |
-          export content="$(cat release_note.md)"
-          content=${content//'"'/'\"'/}
-          content=${content//$'\n'/'\n'}
-          echo "release_note=$content" >> $GITHUB_OUTPUT
-
-      - name: Post build status to a Slack channel
-        id: slack
+      - name: Notify Success
+        id: notify_success
         uses: slackapi/slack-github-action@v1.25.0
         with:
           channel-id: 'C049MCCJ38B'
@@ -95,14 +78,14 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "<!channel> Deploy Application to Google Play Internal Store: ${{ job.status }}\n"
+                    "text": "<!channel> :white_check_mark: Deploy Application to Google Play Internal Store: Success\n"
                   }
                 },
                 {
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "*Feature*\n${{ steps.release_note.outputs.release_note }}"
+                    "text": "*Release Notes*\n${{ needs.build.outputs.release_notes }}"
                   }
                 },
                 {
@@ -110,11 +93,73 @@ jobs:
                   "fields": [
                     {
                       "type": "mrkdwn",
-                      "text": "*Branch*\n${{ github.ref_name }}"
+                      "text": "*Tag*\n${{ github.ref_name }}"
                     },
                     {
                       "type": "mrkdwn",
-                      "text": "*Version*\n${{ steps.version.outputs.version }}"
+                      "text": "*Version*\n${{ needs.build.outputs.version }}"
+                    }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
+  notify_failure:
+    needs: [ build ]
+    runs-on: ubuntu-latest
+    if: ${{ failure() }}
+    steps:
+      - name: Test Exception
+        run: |
+          echo "${{ needs.build.outputs.exception }}"
+
+      - name: Notify Failure
+        id: notify_failure
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          channel-id: 'C049MCCJ38B'
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "<!channel> :x: Deploy Application to Google Play Internal Store: Failed!\n"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Exception*\n${{ needs.build.outputs.exception }}"
+                  }
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": ":github: Failed action!"
+                      },
+                      "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                    }
+                  ]
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Tag*\n${{ github.ref_name }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Version*\n${{ needs.build.outputs.version }}"
                     }
                   ]
                 }

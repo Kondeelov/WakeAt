@@ -2,11 +2,8 @@ name: Upload Apk to Firebase Distribution
 
 on:
   push:
-    branches:
-      - 'master'
     tags:
       - '*-release-alpha'
-  workflow_dispatch:
 
 jobs:
   #  build:
@@ -116,7 +113,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "<!channel> :white_check_mark: Upload app to FirebaseDistribution: ${{ needs.build.status }}\n"
+                    "text": "<!channel> :white_check_mark: Upload app to FirebaseDistribution: Success\n"
                   }
                 },
                 {
@@ -165,7 +162,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "<!channel> :x: Upload app to FirebaseDistribution: ${{ needs.build.status }}\n"
+                    "text": "<!channel> :x: Upload app to FirebaseDistribution: Failed!\n"
                   }
                 },
                 {
