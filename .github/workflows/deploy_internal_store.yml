@@ -39,7 +39,7 @@ jobs:
         id: check_master
         if: contains(steps.check_branch.outputs.branches, 'master') == false
         run: | 
-          echo "exception=Could not build from non master branch!" >> $GITHUB_OUTPUT
+          echo "exception=*Could not build from non master branch!*" >> $GITHUB_OUTPUT
           exit -1
 
       - name: set up JDK 17
