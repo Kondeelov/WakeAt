@@ -1,14 +1,9 @@
 name: Deploy app to Google Play Internal Store
 
 on:
-  workflow_run:
-    workflows: [ "build" ]
-    types: [ requested ]
-    branches:
-      - 'master'
-  push:
-    tags:
-      - '*-release-production'
+#  push:
+#    tags:
+#      - '*-release-production'
   workflow_dispatch:
 
 jobs:
@@ -40,16 +35,19 @@ jobs:
           echo "KEY_ALIAS=${{ secrets.KEY_ALIAS }}" &>> signing.properties
           echo "KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}" &>> signing.properties
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-      - name: Build with Gradle
-        run: ./gradlew bundleProductionRelease
-
       - name: Get version
         id: version
         run: |
           export versionName="$(./gradlew -q app:printVersionName)"
           echo "version=$versionName" >> $GITHUB_OUTPUT
+
+      - name: Get release notes
+        id: release_notes
+        run: |
+          export content="$(cat release_notes.md)"
+          content=${content//'"'/'\"'/}
+          content=${content//$'\n'/'\n'}
+          echo "release_notes=$content" >> $GITHUB_OUTPUT
 
       - name: Upload Android Release to Play Store
         uses: r0adkll/upload-google-play@v1.1.3

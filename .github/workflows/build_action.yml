@@ -42,12 +42,30 @@ jobs:
     outputs:
       version: ${{ steps.version.outputs.version }}
       release_notes: ${{ steps.release_notes.outputs.release_notes }}
-      exception: ${{ steps.build_exception.outputs.exception }}
+#      branches: ${{ steps.check_step.outputs.branches }}
 
     steps:
 
       - name: Check out source code.
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get current branch
+        id: check_step
+        # 1. Get the list of branches ref where this tag exists
+        # 2. Remove 'origin/' from that result
+        # 3. Put that string in output
+        # => We can now use function 'contains(list, item)''
+        run: |
+          raw=$(git branch -r --contains '${{ github.ref }}')
+          branch_list="$(echo ${raw//origin\//} | tr -d '\n')"
+          echo "branches=$branch_list" >> $GITHUB_OUTPUT
+          echo "Branches where this tag exists : branch_list."
+
+      - name: Exit if not on master branch
+        if: contains(steps.check_step.outputs.branches, 'master') == false
+        run: exit -1
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -146,10 +164,6 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ failure() }}
     steps:
-      - name: Test Exception
-        run: |
-          echo "${{ needs.build.outputs.exception }}"
-
       - name: Notify Failure
         id: notify_failure
         uses: slackapi/slack-github-action@v1.25.0
@@ -169,7 +183,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "*Exception*\n${{ needs.build.outputs.exception }}"
+                    "text": "*You can check error from here*\n"
                   }
                 },
                 {
