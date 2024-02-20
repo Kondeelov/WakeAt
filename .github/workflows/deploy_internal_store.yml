@@ -1,14 +1,9 @@
 name: Deploy app to Google Play Internal Store
 
 on:
-  workflow_run:
-    workflows: [ "build" ]
-    types: [ requested ]
-    branches:
-      - 'master'
   push:
-    tags:
-      - '*-release-production'
+    tags: ['*-release-production']
+    branches: [ master ]
   workflow_dispatch:
 
 jobs:
