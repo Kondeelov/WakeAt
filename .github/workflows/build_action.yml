@@ -82,7 +82,7 @@ jobs:
           appId: ${{ secrets.FIREBASE_APP_ID_DEV }}
           serviceCredentialsFileContent: ${{ secrets.CREDENTIAL_FILE_CONTENT_DEV }}
           file: app/build/outputs/apk/dev/release/app-dev-release.apk
-          groups: android, tester
+          groups: android, tester, qa-group
           releaseNotesFile: release_notes.md
 
 #      - name: Build ProductionRelease APK with Gradle
