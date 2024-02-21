@@ -185,7 +185,7 @@ jobs:
                     },
                     {
                       "type": "mrkdwn",
-                      "text": "*Version*\n${{ needs.build.outputs.version }}"
+                      "text": "*Version*\n${{ needs.build.outputs.version != '' && needs.build.outputs.version || '-' }}"
                     }
                   ]
                 }

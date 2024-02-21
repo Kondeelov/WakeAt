@@ -6,34 +6,6 @@ on:
       - '*-release-alpha'
 
 jobs:
-  #  build:
-  #
-  #    runs-on: ubuntu-latest
-  #
-  #    steps:
-  #
-  #    - uses: actions/checkout@v4
-  #
-  #    - name: set up JDK 17
-  #      uses: actions/setup-java@v4
-  #      with:
-  #        java-version: '17'
-  #        distribution: 'zulu'
-  #        cache: gradle
-  #
-  #    - name: Grant execute permission for gradlew
-  #      run: chmod +x gradlew
-  #    - name: Build with Gradle
-  #      run: ./gradlew assembleProductionRelease
-  #
-  #    - name: Upload to Firebase App Distribution
-  #      uses: wzieba/Firebase-Distribution-Github-Action@v1.7.0
-  #      with:
-  #        appId: ${{ secrets.FIREBASE_APP_ID }}
-  #        serviceCredentialsFileContent: ${{ secrets.CREDENTIAL_FILE_CONTENT }}
-  #        file: app/build/outputs/apk/production/release/app-production-release.apk
-  #        groups: android
-  #        releaseNotesFile: release_notes.md
 
   build:
 
@@ -102,7 +74,7 @@ jobs:
       - name: Build DevRelease APK with Gradle
         id: build
         run: |
-          ./gradlew app:assembleDevRelease
+          ./gradlew app:clean app:assembleDevRelease
 
       - name: Upload to Firebase App Distribution
         uses: wzieba/Firebase-Distribution-Github-Action@v1.7.0
@@ -110,8 +82,22 @@ jobs:
           appId: ${{ secrets.FIREBASE_APP_ID_DEV }}
           serviceCredentialsFileContent: ${{ secrets.CREDENTIAL_FILE_CONTENT_DEV }}
           file: app/build/outputs/apk/dev/release/app-dev-release.apk
-          groups: android
+          groups: android, tester
           releaseNotesFile: release_notes.md
+
+#      - name: Build ProductionRelease APK with Gradle
+#        id: build
+#        run: |
+#          ./gradlew app:clean app:assembleProductionRelease
+#
+#      - name: Upload to Firebase App Distribution
+#        uses: wzieba/Firebase-Distribution-Github-Action@v1.7.0
+#        with:
+#          appId: ${{ secrets.FIREBASE_APP_ID }}
+#          serviceCredentialsFileContent: ${{ secrets.CREDENTIAL_FILE_CONTENT }}
+#          file: app/build/outputs/apk/production/release/app-production-release.apk
+#          groups: android
+#          releaseNotesFile: release_notes.md
 
   notify_success:
     needs: [ build ]
@@ -207,7 +193,7 @@ jobs:
                     },
                     {
                       "type": "mrkdwn",
-                      "text": "*Version*\n${{ needs.build.outputs.version }}"
+                      "text": "*Version*\n${{ needs.build.outputs.version != '' && needs.build.outputs.version || '-' }}"
                     }
                   ]
                 }
